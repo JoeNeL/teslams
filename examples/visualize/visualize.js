@@ -595,9 +595,9 @@ app.namespace(baseUrl, function() {
                 // now look for data in the aux collection
 
                 var collection = db.collection("tesla_aux");
-                var maxAmp = 0, maxVolt = 0, maxMph = 0, maxPower = 0;
-                var outputAmp = "", outputVolt = "", outputPower = "";
-                var amp, volt, power;
+                var maxAmp = 0, maxVolt = 0, maxMph = 0, maxPower = 0, maxPhases = 0;
+                var outputAmp = "", outputVolt = "", outputPower = "", outputPhases = "";
+                var amp, volt, power, phases;
                 lastDate = +from;
                 collection.find({"chargeState": {"$exists": true},
                          "ts": {$gte: +from, $lte: +to}}).toArray(function(err,docs) {
@@ -605,6 +605,7 @@ app.namespace(baseUrl, function() {
                     outputAmp = "[" + (+firstDate) + ",0]";
                     outputVolt = "[" + (+firstDate) + ",0]";
                     outputPower = "[" + (+firstDate) + ",0]";
+		    outputPhases = "[" + (+firstDate) + ",0]";
                     var comma = "";
                     docs.forEach(function(doc) {
                         amp = volt = 0;
@@ -623,8 +624,13 @@ app.namespace(baseUrl, function() {
                                 outputVolt += ",[" + doc.ts + "," + volt + "]";
                                 lastDate = doc.ts;
                             }
+			    if (doc.chargeState.charger_phases !== undefined) {
+                                phases = doc.chargeState.charger_phases;
+                                outputPhases += ",[" + doc.ts + "," + phases + "]";
+                                lastDate = doc.ts;
+                            }
                             if (lastDate == doc.ts) { // we had valid values
-                                power = parseFloat(volt) * parseFloat(amp) / 1000;
+                                power = parseFloat(volt) * parseFloat(amp) * parseFloatphases) / 1000;
                                 outputPower += ",[" + doc.ts + "," + power.toFixed(1) + "]";
                                 if (power > maxPower) {
                                     maxPower = power;
@@ -641,6 +647,7 @@ app.namespace(baseUrl, function() {
                             outputAmp += ",[" + doc.ts + ",0]";
                             outputVolt += ",[" + doc.ts + ",0]";
                             outputPower += ",[" + doc.ts + ",0]";
+			    outputPhases += ",[" + doc.ts + ",0]";
                         }
                         if (doc.chargeState.battery_range !== undefined) {
                             outputRange += comma + "[" + doc.ts + "," + doc.chargeState.battery_range + "]";
