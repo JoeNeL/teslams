@@ -630,7 +630,7 @@ app.namespace(baseUrl, function() {
                                 lastDate = doc.ts;
                             }
                             if (lastDate == doc.ts) { // we had valid values
-                                power = parseFloat(volt) * parseFloat(amp) * parseFloatphases) / 1000;
+				    power = parseFloat(volt) * parseFloat(amp) * parseFloat(phases) / 1000;
                                 outputPower += ",[" + doc.ts + "," + power.toFixed(1) + "]";
                                 if (power > maxPower) {
                                     maxPower = power;
